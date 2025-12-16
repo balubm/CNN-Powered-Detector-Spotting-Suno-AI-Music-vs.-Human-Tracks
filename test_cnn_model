@@ -1,0 +1,77 @@
+import numpy as np
+from sklearn.metrics import classification_report, accuracy_score
+from tensorflow import keras
+import pandas as pd
+
+# Load your trained model
+model_path = '/Users/balamuralibalu/PythonProjects/AI_Music_detection_project/AI_music_detection/models/AI_music_detector_cnn_model.keras'
+model = keras.models.load_model(model_path)
+print("Model loaded successfully!")
+
+# Test batches 2-4
+file_paths = [
+    '/Users/balamuralibalu/PythonProjects/AI_Music_detection_project/AI_music_detection/out/data_batch_2.npz',
+    '/Users/balamuralibalu/PythonProjects/AI_Music_detection_project/AI_music_detection/out/data_batch_3.npz',
+    '/Users/balamuralibalu/PythonProjects/AI_Music_detection_project/AI_music_detection/out/data_batch_4.npz',
+]
+
+results = []
+all_y_true = []
+all_y_pred = []
+
+for i, file in enumerate(file_paths):
+    print(f"\n=== Processing Batch {i+2} ===")
+    testing_data = np.load(file)
+    X_testing = testing_data["spectrograms"]
+    y_testing = testing_data["labels"]
+    
+    # Class distribution
+    ones = np.sum(y_testing)
+    total = len(y_testing)
+    print(f"{ones} Suno samples out of {total}")
+    
+    # Normalize same way as training
+    mean = np.mean(X_testing)
+    std = np.std(X_testing)
+    X_testing_norm = (X_testing - mean) / std
+    X_testing_norm = X_testing_norm[..., np.newaxis]
+    
+    # Predict
+    y_prob = model.predict(X_testing_norm, batch_size=32, verbose=0)
+    y_pred = (y_prob >= 0.5).astype(int).ravel()
+    
+    # Store results
+    batch_acc = accuracy_score(y_testing, y_pred)
+    report = classification_report(y_testing, y_pred, target_names=["Human", "Suno"], output_dict=True)
+    
+    results.append({
+        'batch': i+2,
+        'accuracy': batch_acc,
+        'human_precision': report['Human']['precision'],
+        'human_recall': report['Human']['recall'],
+        'suno_precision': report['Suno']['precision'],
+    
+        'suno_recall': report['Suno']['recall'],
+        'f1_human': report['Human']['f1-score'],
+        'f1_suno': report['Suno']['f1-score']
+    })
+    
+    all_y_true.extend(y_testing)
+    all_y_pred.extend(y_pred)
+    
+    print(f"Batch {i+2} Accuracy: {batch_acc:.3f}")
+    print(classification_report(y_testing, y_pred, target_names=["Human", "Suno"]))
+
+# Combined results across batches 2-4
+print("\n=== COMBINED BATCHES 2-4 ===")
+combined_report = classification_report(all_y_true, all_y_pred, target_names=["Human", "Suno"])
+print(combined_report)
+
+# Summary table
+df_results = pd.DataFrame(results)
+print("\n=== SUMMARY TABLE ===")
+print(df_results.round(3))
+
+# Save results
+df_results.to_csv('/Users/balamuralibalu/PythonProjects/AI_Music_detection_project/AI_music_detection/results/batches_2-4_report.csv', index=False)
+print("\nResults saved to results/batches_2-4_report.csv")
