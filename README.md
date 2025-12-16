@@ -2,7 +2,7 @@
 
 This project implements a **Convolutional Neural Network (CNN)** to distinguish AI-generated music by **Suno** from human-composed tracks. Using spectrogram-based audio representations, the model can reliably classify short audio clips as either AI-generated or human-made.
 
-LinkedIn Article: [https://www.linkedin.com/pulse/cnn-powered-detector-spotting-suno-ai-music-vs-human-tracks-balu-brvnc/?trackingId=Z%2FqRYAy7Rx6wETXkHnzZQQ%3D%3D](https://www.linkedin.com/pulse/cnn-powered-detector-spotting-suno-ai-music-vs-human-tracks-balu-brvnc)
+LinkedIn Article: https://www.linkedin.com/pulse/cnn-powered-detector-spotting-suno-ai-music-vs-human-tracks-balu-brvnc
 
 ---
 
